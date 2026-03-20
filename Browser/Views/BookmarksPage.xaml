@@ -1,0 +1,135 @@
+<!-- Browser/Views/BookmarksPage.xaml -->
+<Page
+    x:Class="Browser.Views.BookmarksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Browser.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Browser.ViewModels"
+    mc:Ignorable="d"
+    Background="{StaticResource PrimaryBackgroundBrush}">
+
+    <!--
+    Motivo: Se define el tipo de ViewModel asociado a esta View para el diseño de tiempo de diseño.
+    Esto ayuda a Visual Studio a proporcionar IntelliSense y vista previa de datos durante el desarrollo.
+    -->
+    <Page.DataContext>
+        <viewmodels:BookmarksViewModel/>
+    </Page.DataContext>
+
+    <!--
+    Motivo: Usar un Grid como contenedor principal para organizar los elementos en filas y columnas.
+    -->
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Título de la página -->
+            <RowDefinition Height="Auto"/> <!-- Sección para añadir marcadores -->
+            <RowDefinition Height="*"/>    <!-- Lista de marcadores -->
+            <RowDefinition Height="Auto"/> <!-- Sección para editar marcadores -->
+        </Grid.RowDefinitions>
+
+        <!-- Título de la página -->
+        <TextBlock Grid.Row="0" Text="Mis Marcadores"
+                   Style="{StaticResource TitleTextBlockStyle}"
+                   Margin="0,0,0,20"
+                   Foreground="{StaticResource PrimaryForegroundBrush}"/>
+
+        <!-- Sección para añadir nuevo marcador -->
+        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="10" Margin="0,0,0,20"
+                    BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1" Padding="15" CornerRadius="4">
+            <TextBlock Text="Añadir Nuevo Marcador" Style="{StaticResource SubtitleTextBlockStyle}"/>
+            <TextBox PlaceholderText="Título del marcador"
+                     Text="{Binding NewBookmarkTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox PlaceholderText="URL del marcador"
+                     Text="{Binding NewBookmarkUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Añadir Marcador"
+                    Command="{Binding AddBookmarkCommand}"
+                    Style="{StaticResource BaseButtonStyle}"
+                    Background="{StaticResource SofttekBlueBrush}"
+                    Foreground="{StaticResource SecondaryBackgroundBrush}"
+                    HorizontalAlignment="Right"/>
+        </StackPanel>
+
+        <!-- Lista de Marcadores -->
+        <!--
+        Motivo: ListView para mostrar la colección de marcadores.
+        Permite la selección de un elemento y el enlace a comandos.
+        -->
+        <ListView Grid.Row="2"
+                  ItemsSource="{Binding Bookmarks}"
+                  SelectedItem="{Binding SelectedBookmark, Mode=TwoWay}"
+                  SelectionMode="Single"
+                  Margin="0,0,0,20">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:Bookmark">
+                    <StackPanel>
+                        <!--
+                        Motivo: HyperlinkButton para hacer clic en el marcador y navegar a su URL.
+                        Se usa un StackPanel para agrupar el título y la URL.
+                        -->
+                        <HyperlinkButton Command="{Binding DataContext.NavigateToBookmarkCommand, ElementName=PageRoot}"
+                                         CommandParameter="{Binding}"
+                                         Padding="0">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}"
+                                           Style="{StaticResource SubtitleTextBlockStyle}"
+                                           Foreground="{StaticResource LinkForegroundBrush}"/>
+                                <TextBlock Text="{Binding Url}"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{StaticResource SecondaryForegroundBrush}"/>
+                            </StackPanel>
+                        </HyperlinkButton>
+                        <TextBlock Text="{Binding AddedDate, Converter={StaticResource DateTimeFormatConverter}}"
+                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <!--
+                Motivo: Aplicar un estilo de contenedor para cada elemento de la lista,
+                añadiendo margen y bordes redondeados para una mejor apariencia.
+                -->
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,0,0,8"/>
+                    <Setter Property="Padding" Value="10"/>
+                    <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+                    <Setter Property="CornerRadius" Value="4"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <!-- Sección para editar y eliminar marcador -->
+        <!--
+        Motivo: La visibilidad de esta sección se enlaza condicionalmente a SelectedBookmark.
+        Solo se muestra cuando hay un marcador seleccionado.
+        -->
+        <StackPanel Grid.Row="3" Orientation="Vertical" Spacing="10"
+                    Visibility="{Binding SelectedBookmark, Converter={StaticResource ObjectToVisibilityConverter}}"
+                    BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="1" Padding="15" CornerRadius="4">
+            <TextBlock Text="Editar Marcador Seleccionado" Style="{StaticResource SubtitleTextBlockStyle}"/>
+            <TextBox Header="Título"
+                     Text="{Binding EditingTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Header="URL"
+                     Text="{Binding EditingUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                <Button Content="Guardar Cambios"
+                        Command="{Binding EditBookmarkCommand}"
+                        Style="{StaticResource BaseButtonStyle}"
+                        Background="{StaticResource SofttekBlueBrush}"
+                        Foreground="{StaticResource SecondaryBackgroundBrush}"/>
+                <Button Content="Eliminar Marcador"
+                        Command="{Binding DeleteBookmarkCommand}"
+                        Style="{StaticResource BaseButtonStyle}"
+                        Background="{StaticResource ErrorForegroundBrush}"
+                        Foreground="{StaticResource SecondaryBackgroundBrush}"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>
