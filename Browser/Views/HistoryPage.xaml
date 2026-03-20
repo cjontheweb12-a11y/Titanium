@@ -1,0 +1,96 @@
+<!-- Browser/Views/HistoryPage.xaml -->
+<Page
+    x:Class="Browser.Views.HistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Browser.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Browser.ViewModels"
+    mc:Ignorable="d"
+    Background="{StaticResource PrimaryBackgroundBrush}">
+
+    <!--
+    Motivo: Se define el tipo de ViewModel asociado a esta View para el diseño de tiempo de diseño.
+    Esto ayuda a Visual Studio a proporcionar IntelliSense y vista previa de datos durante el desarrollo.
+    -->
+    <Page.DataContext>
+        <viewmodels:HistoryViewModel/>
+    </Page.DataContext>
+
+    <!--
+    Motivo: Usar un Grid como contenedor principal para organizar los elementos en filas y columnas.
+    -->
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Título de la página -->
+            <RowDefinition Height="*"/>    <!-- Lista de historial -->
+            <RowDefinition Height="Auto"/> <!-- Botón para borrar historial -->
+        </Grid.RowDefinitions>
+
+        <!-- Título de la página -->
+        <TextBlock Grid.Row="0" Text="Mi Historial de Navegación"
+                   Style="{StaticResource TitleTextBlockStyle}"
+                   Margin="0,0,0,20"
+                   Foreground="{StaticResource PrimaryForegroundBrush}"/>
+
+        <!-- Lista del Historial -->
+        <!--
+        Motivo: ListView para mostrar la colección de entradas del historial.
+        Permite la selección de un elemento y el enlace a comandos.
+        -->
+        <ListView Grid.Row="1"
+                  ItemsSource="{Binding HistoryEntries}"
+                  SelectionMode="None"
+                  Margin="0,0,0,20">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:HistoryEntry">
+                    <StackPanel>
+                        <!--
+                        Motivo: HyperlinkButton para hacer clic en una entrada del historial y navegar a su URL.
+                        Se usa un StackPanel para agrupar el título, la URL y la marca de tiempo.
+                        -->
+                        <HyperlinkButton Command="{Binding DataContext.NavigateToHistoryCommand, ElementName=PageRoot}"
+                                         CommandParameter="{Binding}"
+                                         Padding="0">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}"
+                                           Style="{StaticResource SubtitleTextBlockStyle}"
+                                           Foreground="{StaticResource LinkForegroundBrush}"/>
+                                <TextBlock Text="{Binding Url}"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{StaticResource SecondaryForegroundBrush}"/>
+                            </StackPanel>
+                        </HyperlinkButton>
+                        <TextBlock Text="{Binding Timestamp, Converter={StaticResource DateTimeFormatConverter}}"
+                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <!--
+                Motivo: Aplicar un estilo de contenedor para cada elemento de la lista,
+                añadiendo margen y bordes redondeados para una mejor apariencia.
+                -->
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,0,0,8"/>
+                    <Setter Property="Padding" Value="10"/>
+                    <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+                    <Setter Property="CornerRadius" Value="4"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <!-- Botón para borrar historial -->
+        <Button Grid.Row="2" Content="Borrar Todo el Historial"
+                Command="{Binding ClearHistoryCommand}"
+                Style="{StaticResource BaseButtonStyle}"
+                Background="{StaticResource ErrorForegroundBrush}"
+                Foreground="{StaticResource SecondaryBackgroundBrush}"
+                HorizontalAlignment="Right"/>
+    </Grid>
+</Page>
