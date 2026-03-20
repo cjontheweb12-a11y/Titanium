@@ -1,0 +1,134 @@
+<!-- Browser/Views/SettingsPage.xaml -->
+<Page
+    x:Class="Browser.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Browser.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Browser.ViewModels"
+    xmlns:models="using:Browser.Models"
+    mc:Ignorable="d"
+    Background="{StaticResource PrimaryBackgroundBrush}">
+
+    <!--
+    Motivo: Se define el tipo de ViewModel asociado a esta View para el diseño de tiempo de diseño.
+    Esto ayuda a Visual Studio a proporcionar IntelliSense y vista previa de datos durante el desarrollo.
+    -->
+    <Page.DataContext>
+        <viewmodels:SettingsViewModel/>
+    </Page.DataContext>
+
+    <!--
+    Motivo: Usar un ScrollViewer permite que el contenido de la página se desplace si es más largo que la pantalla,
+    lo que es esencial para la adaptabilidad en diferentes tamaños de ventana.
+    -->
+    <ScrollViewer>
+        <!--
+        Motivo: Usar un Grid como contenedor principal para organizar los elementos en filas y columnas.
+        -->
+        <Grid Padding="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Título de la página -->
+                <RowDefinition Height="Auto"/> <!-- Sección General -->
+                <RowDefinition Height="Auto"/> <!-- Sección Motor de Búsqueda -->
+                <RowDefinition Height="Auto"/> <!-- Sección Opciones de Inicio -->
+                <RowDefinition Height="Auto"/> <!-- Sección Seguridad y Privacidad -->
+                <RowDefinition Height="Auto"/> <!-- Botón Guardar -->
+            </Grid.RowDefinitions>
+
+            <!-- Título de la página -->
+            <TextBlock Grid.Row="0" Text="Configuración del Navegador"
+                       Style="{StaticResource TitleTextBlockStyle}"
+                       Margin="0,0,0,20"
+                       Foreground="{StaticResource PrimaryForegroundBrush}"/>
+
+            <!-- Sección General -->
+            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="10" Margin="0,0,0,20"
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1" Padding="15" CornerRadius="4">
+                <TextBlock Text="General" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                <TextBox Header="Página de Inicio" PlaceholderText="Ej: https://www.google.com"
+                         Text="{Binding HomePageUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <!-- Sección Motor de Búsqueda -->
+            <StackPanel Grid.Row="2" Orientation="Vertical" Spacing="10" Margin="0,0,0,20"
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1" Padding="15" CornerRadius="4">
+                <TextBlock Text="Motor de Búsqueda" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                <ComboBox Header="Motor de Búsqueda Predeterminado"
+                          ItemsSource="{Binding SearchEngines}"
+                          SelectedItem="{Binding SelectedSearchEngine, Mode=TwoWay}"
+                          SelectedValuePath="Self">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource SearchEngineDisplayNameConverter}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBox Header="URL Personalizada (usar {query} para el término de búsqueda)"
+                         PlaceholderText="Ej: https://duckduckgo.com/?q={query}"
+                         Visibility="{Binding IsCustomSearchEngineVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                         Text="{Binding CustomSearchEngineUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <!-- Sección Opciones de Inicio -->
+            <StackPanel Grid.Row="3" Orientation="Vertical" Spacing="10" Margin="0,0,0,20"
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1" Padding="15" CornerRadius="4">
+                <TextBlock Text="Opciones de Inicio" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                <ComboBox Header="Al Iniciar el Navegador"
+                          ItemsSource="{Binding StartupOptions}"
+                          SelectedItem="{Binding SelectedStartupOption, Mode=TwoWay}"
+                          SelectedValuePath="Self">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource StartupOptionDisplayNameConverter}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Sección Seguridad y Privacidad -->
+            <StackPanel Grid.Row="4" Orientation="Vertical" Spacing="10" Margin="0,0,0,20"
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1" Padding="15" CornerRadius="4">
+                <TextBlock Text="Seguridad y Privacidad" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                <ToggleSwitch Header="Habilitar JavaScript"
+                              IsOn="{Binding IsJavaScriptEnabled, Mode=TwoWay}"/>
+                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                    <Button Content="Borrar Caché y Almacenamiento Local"
+                            Command="{Binding ClearCacheCommand}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource ErrorForegroundBrush}"
+                            Foreground="{StaticResource SecondaryBackgroundBrush}"/>
+                    <Button Content="Borrar Historial"
+                            Command="{Binding ClearHistoryCommand}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource ErrorForegroundBrush}"
+                            Foreground="{StaticResource SecondaryBackgroundBrush}"/>
+                    <Button Content="Borrar Cookies"
+                            Command="{Binding ClearCookiesCommand}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource ErrorForegroundBrush}"
+                            Foreground="{StaticResource SecondaryBackgroundBrush}"
+                            ToolTipService.ToolTip="Debido a las limitaciones del WebView (EdgeHTML), esta acción puede no borrar todas las cookies o ser menos efectiva de lo esperado."/>
+                </StackPanel>
+                <TextBlock Text="Nota: Borrar cookies puede no ser completamente efectivo debido a las limitaciones del WebView (EdgeHTML)."
+                           Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           Visibility="{Binding ElementName=ClearCookiesButton, Path=Visibility}"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- Botón Guardar Configuración -->
+            <Button Grid.Row="5" Content="Guardar Configuración"
+                    Command="{Binding SaveSettingsCommand}"
+                    Style="{StaticResource BaseButtonStyle}"
+                    Background="{StaticResource SofttekBlueBrush}"
+                    Foreground="{StaticResource SecondaryBackgroundBrush}"
+                    HorizontalAlignment="Right"/>
+        </Grid>
+    </ScrollViewer>
+</Page>
